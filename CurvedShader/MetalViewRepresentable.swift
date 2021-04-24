@@ -11,10 +11,12 @@ import SwiftUI
 struct MetalViewRepresentable: NSViewRepresentable {
   
   typealias NSViewType = RenderView
+  
+  @Binding var curve: Float
 
   func makeNSView(context: NSViewRepresentableContext<MetalViewRepresentable>) -> NSViewType {
     let renderView = NSViewType()
-    //cameraView.uiDelegate = context.coordinator
+    renderView.uiDelegate = context.coordinator
     return renderView
   }
   

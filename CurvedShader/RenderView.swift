@@ -15,8 +15,7 @@ class RenderView: MTKView {
   
   private var commandQueue: MTLCommandQueue?
   
-//  var dynamicUniformBuffer: MTLBuffer!
-//  var uniforms: UnsafeMutablePointer<Uniforms>!
+  var uiDelegate: Coordinator?
   
   let alignedUniformsSize = (MemoryLayout<Uniforms>.size + 0xFF) & -0x100
   
@@ -27,9 +26,15 @@ class RenderView: MTKView {
     
     configureMetal()
     
+    objects.append(Cube(device: self.device!, position: SIMD3<Float>(-4,0,-8)))
+    
+    objects.append(Cube(device: self.device!, position: SIMD3<Float>(-3,0,-5)))
+    
     objects.append(Cube(device: self.device!, position: SIMD3<Float>(2,0,0)))
     
     objects.append(Cube(device: self.device!, position: SIMD3<Float>(-2,0,0)))
+    
+    
   }
   
   required init(coder: NSCoder) {
@@ -47,8 +52,9 @@ class RenderView: MTKView {
 //    let world = SCNMatrix4MakeTranslation(0, 0, 0)
 //    let worldSimd = simd_float4x4(world)
     
-    let camera = SCNMatrix4MakeTranslation(0, 0, -3)
-    let cameraSimd = simd_float4x4(camera)
+    let camera = SCNMatrix4MakeTranslation(0, 0, -5)
+    let camera2 = SCNMatrix4Rotate(camera, CGFloat(deg2rad(40)), 0, 1, 0)
+    let cameraSimd = simd_float4x4(camera2)
     
     let fovRadians: Float = deg2rad(85)
     let aspect = Float(self.bounds.size.width / self.bounds.size.height)
@@ -61,7 +67,8 @@ class RenderView: MTKView {
     var uniform = Uniforms(modelMatrix: modelSimd,
                            worldMatrix: worldSimd,
                            cameraMatrix: cameraSimd,
-                           projectionMatrix: perspectiveSimd)
+                           projectionMatrix: perspectiveSimd,
+                           worldToModelMatrix: (worldSimd * modelSimd).inverse)
     
     let uniformBufferSize = alignedUniformsSize
 
@@ -159,7 +166,6 @@ class RenderView: MTKView {
     
     let uniformBuffer = getUniformBuffer(world: object.getTransform())
     
-    //currentRenderPassDescriptor.colorAttachments[0].loadAction = loadAction
     commandEncoder.label = "Preview display"
     commandEncoder.setCullMode(MTLCullMode.front)
     commandEncoder.setRenderPipelineState(renderPipelineState!)
@@ -168,6 +174,10 @@ class RenderView: MTKView {
     
     commandEncoder.setVertexBuffer(uniformBuffer, offset:0, index: 1)
     commandEncoder.setFragmentBuffer(uniformBuffer, offset:0, index: 1)
+    
+    var curve: Float = self.uiDelegate!.parent.curve
+    
+    commandEncoder.setVertexBytes(&curve, length: MemoryLayout<Float>.stride, index: 2)
     
 
     commandEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: object.vertexCount, instanceCount: object.vertexCount / 3)

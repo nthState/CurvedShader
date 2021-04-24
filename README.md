@@ -13,3 +13,6 @@ https://www.raywenderlich.com/728-metal-tutorial-with-swift-3-part-2-moving-to-3
 
 
 https://developer.apple.com/forums/thread/64057
+
+
+https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html

@@ -8,15 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
+  
+  @State var curve: Float = 0.01
+  
     var body: some View {
         ZStack {
           
           Color.blue
             .ignoresSafeArea()
           
-          MetalViewRepresentable()
+          MetalViewRepresentable(curve: $curve)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-           
+          
+          Slider(value: $curve, in: 0...1)
         }
     }
 }
