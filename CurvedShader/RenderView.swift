@@ -27,7 +27,9 @@ class RenderView: MTKView {
     
     configureMetal()
     
-    objects.append(Cube(device: self.device!))
+    objects.append(Cube(device: self.device!, position: SIMD3<Float>(2,0,0)))
+    
+    objects.append(Cube(device: self.device!, position: SIMD3<Float>(-2,0,0)))
   }
   
   required init(coder: NSCoder) {
@@ -38,11 +40,13 @@ class RenderView: MTKView {
       return number * .pi / 180
   }
   
-  func getUniformBuffer() -> MTLBuffer {
+  func getUniformBuffer(world worldSimd: float4x4) -> MTLBuffer {
     
-    //matrix_identity_float4x4
+    let modelSimd = matrix_identity_float4x4
     
-    //let m = matrix_from_rot
+//    let world = SCNMatrix4MakeTranslation(0, 0, 0)
+//    let worldSimd = simd_float4x4(world)
+    
     let camera = SCNMatrix4MakeTranslation(0, 0, -3)
     let cameraSimd = simd_float4x4(camera)
     
@@ -50,20 +54,18 @@ class RenderView: MTKView {
     let aspect = Float(self.bounds.size.width / self.bounds.size.height)
     let nearZ: Float = 0.01
     let farZ: Float = 100
-    let p = GLKMatrix4MakePerspective(fovRadians, aspect, nearZ, farZ)
+    let perspective = GLKMatrix4MakePerspective(fovRadians, aspect, nearZ, farZ)
     
-    let pSimd = float4x4(matrix: p)
+    let perspectiveSimd = float4x4(matrix: perspective)
     
-    var uniform = Uniforms(modelMatrix: cameraSimd,
-                           worldMatrix: matrix_identity_float4x4,
-                           cameraMatrix: matrix_identity_float4x4,
-                           projectionMatrix: pSimd)
+    var uniform = Uniforms(modelMatrix: modelSimd,
+                           worldMatrix: worldSimd,
+                           cameraMatrix: cameraSimd,
+                           projectionMatrix: perspectiveSimd)
     
     let uniformBufferSize = alignedUniformsSize
-    //let buffer = self.device!.makeBuffer(length:uniformBufferSize, options:[MTLResourceOptions.storageModeShared])!
-    
+
     let buffer = self.device!.makeBuffer(bytes: &uniform, length: uniformBufferSize, options: [MTLResourceOptions.storageModeShared])!
-//    uniforms = UnsafeMutableRawPointer(dynamicUniformBuffer.contents()).bindMemory(to:Uniforms.self, capacity:1)
     
     return buffer
   }
@@ -138,6 +140,8 @@ class RenderView: MTKView {
     
     for (index, object) in objects.enumerated() {
       let loadAction: MTLLoadAction = index == 0 ? .clear : .load
+      renderPassDescriptor.colorAttachments[0].loadAction = loadAction
+      
       drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor, loadAction: loadAction)
     }
     
@@ -153,7 +157,7 @@ class RenderView: MTKView {
       return
     }
     
-    let uniformBuffer = getUniformBuffer()
+    let uniformBuffer = getUniformBuffer(world: object.getTransform())
     
     //currentRenderPassDescriptor.colorAttachments[0].loadAction = loadAction
     commandEncoder.label = "Preview display"

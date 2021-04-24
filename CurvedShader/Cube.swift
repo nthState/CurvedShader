@@ -6,6 +6,7 @@
 //
 
 import MetalKit
+import SceneKit
 
 class Cube {
   
@@ -25,7 +26,9 @@ class Cube {
   
   var vertexCount = 8
   
-  init(device: MTLDevice) {
+  var position: SIMD3<Float> = .zero
+  
+  init(device: MTLDevice, position: SIMD3<Float>) {
     verticesArray = [
       A,B,C ,A,C,D,   //Front
       R,T,S ,Q,R,S,   //Back
@@ -47,5 +50,12 @@ class Cube {
     let dataSize = vertexData.count * MemoryLayout.size(ofValue: vertexData[0])
     vertexBuffer = device.makeBuffer(bytes: vertexData, length: dataSize, options: [])
     
+    self.position = position
+  }
+  
+  func getTransform() -> float4x4 {
+    let world = SCNMatrix4MakeTranslation(CGFloat(position.x), CGFloat(position.y), CGFloat(position.z))
+    let worldSimd = simd_float4x4(world)
+    return worldSimd
   }
 }

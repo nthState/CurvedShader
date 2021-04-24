@@ -26,11 +26,17 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   VertexIn VertexIn = vertex_array[vid];
   
   float4x4 mv_Matrix = uniforms.modelMatrix;
+  float4x4 cam_Matrix = uniforms.cameraMatrix;
+  float4x4 wrld_Matrix = uniforms.worldMatrix;
   float4x4 proj_Matrix = uniforms.projectionMatrix;
+  
+  float4x4 modelTransform = wrld_Matrix * mv_Matrix; // model world transform
+  float4x4 modelViewTransform = cam_Matrix * modelTransform; // Model/view tranform
+  float4x4 modelViewProjectionTransform = proj_Matrix * modelViewTransform;
   
   ColorInOut out;
   //out.position = float4(VertexIn.position, 1);
-  out.position = proj_Matrix * mv_Matrix * float4(VertexIn.position,1);
+  out.position = modelViewProjectionTransform * float4(VertexIn.position,1);
   out.texCoord = VertexIn.texCoord;
   return out;
 }
@@ -38,7 +44,7 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
 fragment float4 fragmentShader(ColorInOut in [[stage_in]],
                                constant Uniforms & uniforms [[ buffer(1) ]]) {
   
-  matrix_float4x4 v = uniforms.cameraMatrix;
+  //matrix_float4x4 v = uniforms.cameraMatrix;
   
   //return float4(1.0, 0.0, 0.0, 1.0);
   return in.texCoord;
