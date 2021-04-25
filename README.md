@@ -7,6 +7,8 @@ to try it out.
 
 I'm still trying to work out how to convert the Unity Shader code into Metal
 
+![Demo 1l](https://github.com/nthState/CurvedShader/blob/main/Screenshots/demo.gif?raw=true)
+
 ![Screenshot 1l](https://github.com/nthState/CurvedShader/blob/main/Screenshots/ui.png?raw=true)
 
 ## Running the Demo
