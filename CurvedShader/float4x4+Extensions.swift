@@ -16,3 +16,9 @@ extension float4x4 {
                             SIMD4<Float>(x: matrix.m30, y: matrix.m31, z: matrix.m32, w: matrix.m33)))
     }
 }
+
+extension float4x4 {
+    func position() -> simd_float3 {
+        return simd_float3(columns.3.x, columns.3.y, columns.3.z)
+    }
+}

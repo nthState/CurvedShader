@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		671347DA263601290009B532 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671347D9263601290009B532 /* Logging.swift */; };
 		67BE1AAD263462AC00C5B377 /* CurvedShaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */; };
 		67BE1AAF263462AC00C5B377 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE1AAE263462AC00C5B377 /* ContentView.swift */; };
 		67BE1AB1263462AD00C5B377 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67BE1AB0263462AD00C5B377 /* Assets.xcassets */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		671347D9263601290009B532 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		67BE1AA9263462AC00C5B377 /* CurvedShader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CurvedShader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurvedShaderApp.swift; sourceTree = "<group>"; };
 		67BE1AAE263462AC00C5B377 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				67BE1AB0263462AD00C5B377 /* Assets.xcassets */,
 				67BE1AB5263462AD00C5B377 /* Info.plist */,
 				67BE1AB6263462AD00C5B377 /* CurvedShader.entitlements */,
+				671347D9263601290009B532 /* Logging.swift */,
 				67BE1AB2263462AD00C5B377 /* Preview Content */,
 			);
 			path = CurvedShader;
@@ -173,6 +176,7 @@
 				67BE1AAD263462AC00C5B377 /* CurvedShaderApp.swift in Sources */,
 				67BE1ADE2634A6EA00C5B377 /* float4x4+Extensions.swift in Sources */,
 				67BE1AD32634690500C5B377 /* Cube.swift in Sources */,
+				671347DA263601290009B532 /* Logging.swift in Sources */,
 				67BE1AD0263468E300C5B377 /* Vertex.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

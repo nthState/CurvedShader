@@ -8,6 +8,7 @@
 import Foundation
 import MetalKit
 import SceneKit
+import os.log
 
 class RenderView: MTKView {
   
@@ -65,6 +66,8 @@ class RenderView: MTKView {
     let cameraTranslation = SCNMatrix4Translate(SCNMatrix4Identity, 0, zCameraHeight, zCamera)
     let camera = SCNMatrix4Mult(cameraTranslation, cameraRotation)
     let cameraSimd = simd_float4x4(camera)
+    
+    //os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "\(cameraSimd.position())")
     
     let fovRadians: Float = deg2rad(90)
     let aspect = Float(self.bounds.size.width / self.bounds.size.height)
