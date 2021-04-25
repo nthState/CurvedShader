@@ -59,16 +59,9 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   float4x4 modelViewTransform = camera_matrix * modelTransform; // Model/view tranform
   float4x4 modelViewProjectionTransform = projection_matrix * modelViewTransform; // Mvp
   
-  
-//  float4 pos = float4(VertexIn.position, 1);
-//  float4 vv = model_matrix * pos;
-//  vv.xyz -= camera_matrix.columns[3].xyz;
-//  vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
-//  pos += worldInverse_matrix * vv;
-  
   float4 pos = float4(VertexIn.position, 1);
-  float4 vv =  pos;
-  vv.xyz -= modelViewTransform.columns[3].xyz;
+  float4 vv = modelTransform * pos;
+  vv.xyz -= camera_matrix.columns[3].xyz;
   vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
   pos += worldInverse_matrix * vv;
   

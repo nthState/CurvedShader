@@ -55,12 +55,7 @@ class RenderView: MTKView {
       return number * .pi / 180
   }
   
-  func getUniformBuffer(world worldSimd: float4x4) -> MTLBuffer {
-    
-    let modelSimd = matrix_identity_float4x4
-    
-//    let world = SCNMatrix4MakeTranslation(0, 0, 0)
-//    let worldSimd = simd_float4x4(world)
+  func getUniformBuffer(modelTransform modelSimd: float4x4 = matrix_identity_float4x4, worldTransform worldSimd: float4x4 = matrix_identity_float4x4) -> MTLBuffer {
     
     let zCamera = CGFloat(self.uiDelegate!.parent.zCamera)
     let zCameraAngle = self.uiDelegate!.parent.zCameraAngle
@@ -91,28 +86,6 @@ class RenderView: MTKView {
     return buffer
   }
   
-//  func getVertexDescriptor() -> MTLVertexDescriptor {
-//    let mtlVertexDescriptor = MTLVertexDescriptor()
-//
-//    mtlVertexDescriptor.attributes[0].format = MTLVertexFormat.float3
-//    mtlVertexDescriptor.attributes[0].offset = 0
-//    mtlVertexDescriptor.attributes[0].bufferIndex = 0
-//
-//    mtlVertexDescriptor.attributes[1].format = MTLVertexFormat.float2
-//    mtlVertexDescriptor.attributes[1].offset = 0
-//    mtlVertexDescriptor.attributes[1].bufferIndex = 1
-//
-//    mtlVertexDescriptor.layouts[0].stride = 12
-//    mtlVertexDescriptor.layouts[0].stepRate = 1
-//    mtlVertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunction.perVertex
-//
-//    mtlVertexDescriptor.layouts[1].stride = 8
-//    mtlVertexDescriptor.layouts[1].stepRate = 1
-//    mtlVertexDescriptor.layouts[1].stepFunction = MTLVertexStepFunction.perVertex
-//
-//    return mtlVertexDescriptor
-//  }
-  
   func configureMetal() {
     
     let defaultLibrary = device!.makeDefaultLibrary()!
@@ -121,7 +94,6 @@ class RenderView: MTKView {
     pipelineDescriptor.vertexFunction = defaultLibrary.makeFunction(name: "vertexShader")
     pipelineDescriptor.fragmentFunction = defaultLibrary.makeFunction(name: "fragmentShader")
     pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-    //pipelineDescriptor.vertexDescriptor = getVertexDescriptor()
     
     do {
       renderPipelineState = try device!.makeRenderPipelineState(descriptor: pipelineDescriptor)
@@ -133,11 +105,7 @@ class RenderView: MTKView {
   }
   
   override func draw(_ rect: CGRect) {
-    
-//    guard let drawable = currentDrawable else {
-//      return
-//    }
-    
+
     guard let drawable = (self.layer as? CAMetalLayer)?.nextDrawable() else {
       return
     }
@@ -179,7 +147,7 @@ class RenderView: MTKView {
       return
     }
     
-    let uniformBuffer = getUniformBuffer(world: object.getTransform())
+    let uniformBuffer = getUniformBuffer(worldTransform: object.getTransform())
     
     commandEncoder.label = "Preview display"
     commandEncoder.setCullMode(MTLCullMode.front)

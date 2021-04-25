@@ -46,7 +46,6 @@ class Cube {
     
     var vertexData = Array<Float>()
     for vertex in verticesArray {
-      //vertexData += vertex.floatBuffer()
       vertexData += [vertex.x, vertex.y, vertex.z, color.x, color.y, color.z, 1.0]
     }
     
@@ -58,8 +57,8 @@ class Cube {
   }
   
   func getTransform() -> float4x4 {
-    let world = SCNMatrix4MakeTranslation(CGFloat(position.x), CGFloat(position.y), CGFloat(position.z))
-    let worldSimd = simd_float4x4(world)
-    return worldSimd
+    let transform = SCNMatrix4MakeTranslation(CGFloat(position.x), CGFloat(position.y), CGFloat(position.z))
+    let transformSimd = simd_float4x4(transform)
+    return transformSimd
   }
 }

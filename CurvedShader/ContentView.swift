@@ -33,7 +33,7 @@ struct ContentView: View {
             }
             
             HStack {
-              Text("Z Camera Distance")
+              Text("Z Camera Position")
               Slider(value: $zCamera, in: -100...100)
               TextField("", value: $zCamera, formatter: NumberFormatter())
                 .frame(width: 100)
