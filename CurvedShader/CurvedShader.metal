@@ -70,7 +70,7 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   float4 vv =  pos;
   vv.xyz -= modelViewTransform.columns[3].xyz;
   vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
-  pos += vv;
+  pos += worldInverse_matrix * vv;
   
   ColorInOut out;
   out.position = modelViewProjectionTransform * pos;
