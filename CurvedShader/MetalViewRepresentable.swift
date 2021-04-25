@@ -14,6 +14,8 @@ struct MetalViewRepresentable: NSViewRepresentable {
   
   @Binding var curve: Float
   @Binding var zCamera: Float
+  @Binding var zCameraAngle: Float
+  @Binding var zCameraHeight: Float
 
   func makeNSView(context: NSViewRepresentableContext<MetalViewRepresentable>) -> NSViewType {
     let renderView = NSViewType()

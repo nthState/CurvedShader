@@ -26,7 +26,7 @@ class RenderView: MTKView {
     
     configureMetal()
     
-    for y in (0...5).reversed() {
+    for y in (0...20).reversed() {
       for x in (0...5).reversed() {
         
         // Randomly decide to place a cube
@@ -63,17 +63,19 @@ class RenderView: MTKView {
 //    let worldSimd = simd_float4x4(world)
     
     let zCamera = CGFloat(self.uiDelegate!.parent.zCamera)
+    let zCameraAngle = self.uiDelegate!.parent.zCameraAngle
+    let zCameraHeight = CGFloat(self.uiDelegate!.parent.zCameraHeight)
     
-    let camera = SCNMatrix4MakeTranslation(0, 0, zCamera)
-    let camera2 = SCNMatrix4Rotate(camera, CGFloat(deg2rad(40)), 1, 0, 0)
-    let cameraSimd = simd_float4x4(camera2)
+    let cameraRotation = SCNMatrix4Rotate(SCNMatrix4Identity, CGFloat(deg2rad(zCameraAngle)), 1, 0, 0)
+    let cameraTranslation = SCNMatrix4Translate(SCNMatrix4Identity, 0, zCameraHeight, zCamera)
+    let camera = SCNMatrix4Mult(cameraTranslation, cameraRotation)
+    let cameraSimd = simd_float4x4(camera)
     
-    let fovRadians: Float = deg2rad(85)
+    let fovRadians: Float = deg2rad(90)
     let aspect = Float(self.bounds.size.width / self.bounds.size.height)
     let nearZ: Float = 0.01
     let farZ: Float = 100
     let perspective = GLKMatrix4MakePerspective(fovRadians, aspect, nearZ, farZ)
-    
     let perspectiveSimd = float4x4(matrix: perspective)
     
     var uniform = Uniforms(modelMatrix: modelSimd,

@@ -21,6 +21,7 @@ typedef struct {
 
 //vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) ]],
 //                               constant Uniforms & uniforms [[ buffer(1) ]],
+//                               constant float & curvature [[ buffer(2) ]],
 //                               unsigned int vid [[ vertex_id ]]) {
 //
 //  VertexIn VertexIn = vertex_array[vid];
@@ -32,7 +33,7 @@ typedef struct {
 //
 //  float4x4 modelTransform = wrld_Matrix * mv_Matrix; // model world transform
 //  float4x4 modelViewTransform = cam_Matrix * modelTransform; // Model/view tranform
-//  float4x4 modelViewProjectionTransform = proj_Matrix * modelViewTransform;
+//  float4x4 modelViewProjectionTransform = proj_Matrix * modelViewTransform; // Mvp
 //
 //  ColorInOut out;
 //  //out.position = float4(VertexIn.position, 1);
@@ -56,14 +57,14 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   
   float4x4 modelTransform = wrld_Matrix * mv_Matrix; // model world transform
   float4x4 modelViewTransform = cam_Matrix * modelTransform; // Model/view tranform
-  float4x4 modelViewProjectionTransform = proj_Matrix * modelViewTransform;
+  float4x4 modelViewProjectionTransform = proj_Matrix * modelViewTransform; // Mvp
   
   
   float4 pos = float4(VertexIn.position, 1);
-  float4 vv = wrld_Matrix * pos;
+  float4 vv =  pos;
   vv.xyz -= modelViewTransform.columns[3].xyz;
   vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
-  pos += wrld_to_mdl_Matrix * vv;
+  pos += vv;
   
   ColorInOut out;
   out.position = modelViewProjectionTransform * pos;

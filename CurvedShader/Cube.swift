@@ -11,9 +11,7 @@ import SceneKit
 class Cube {
   
   var vertexBuffer: MTLBuffer!
-  
- 
-  
+
   var verticesArray:Array<Vertex> = []
   
   var vertexCount = 8
