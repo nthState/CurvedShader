@@ -15,7 +15,9 @@ I'm still trying to work out how to convert the Unity Shader code into Metal
 
 Download the code and run, use the `z Distance` slider to move the camera along the Z-Axis.
 
-Current issues, the perspective definately seems off
+## Issues
+
+- [ ] The perspective definately seems off, possibly the Unity to Metal converstion is wrong
 
 ## Shader Info
 
