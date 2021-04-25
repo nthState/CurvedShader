@@ -72,24 +72,6 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   return out;
 }
 
-//// This is where the curvature is applied
-//        void vert( inout appdata_full v)
-//        {
-//            // Transform the vertex coordinates from model space into world space
-//            float4 vv = mul( _Object2World, v.vertex );
-//
-//            // Now adjust the coordinates to be relative to the camera position
-//            vv.xyz -= _WorldSpaceCameraPos.xyz;
-//
-//            // Reduce the y coordinate (i.e. lower the "height") of each vertex based
-//            // on the square of the distance from the camera in the z axis, multiplied
-//            // by the chosen curvature factor
-//            vv = float4( 0.0f, (vv.z * vv.z) * - _Curvature, 0.0f, 0.0f );
-//
-//            // Now apply the offset back to the vertices in model space
-//            v.vertex += mul(_World2Object, vv);
-//        }
-
 fragment float4 fragmentShader(ColorInOut in [[stage_in]],
                                constant Uniforms & uniforms [[ buffer(1) ]]) {
   return in.texCoord;
