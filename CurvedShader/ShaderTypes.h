@@ -15,7 +15,7 @@ typedef struct {
     matrix_float4x4 worldMatrix;
     matrix_float4x4 cameraMatrix;
     matrix_float4x4 projectionMatrix;
-  matrix_float4x4 worldToModelMatrix;
+  matrix_float4x4 worldInverseMatrix;
 } Uniforms;
 
 #endif /* Shared_h */

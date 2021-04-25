@@ -82,7 +82,7 @@ class RenderView: MTKView {
                            worldMatrix: worldSimd,
                            cameraMatrix: cameraSimd,
                            projectionMatrix: perspectiveSimd,
-                           worldToModelMatrix: (worldSimd * modelSimd).inverse)
+                           worldInverseMatrix: (worldSimd * modelSimd).inverse)
     
     let uniformBufferSize = alignedUniformsSize
 
