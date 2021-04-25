@@ -1,5 +1,12 @@
 # Curved Shader Test
 
+## What is it?
+
+I'm attempting to re-create the same shader effect as Animal Crossing, I've made a simple-as-possible Metal based SwiftUI macOS App
+to try it out.
+
+I'm still trying to work out how to convert the Unity Shader code into Metal
+
 ![Screenshot 1l](https://github.com/nthState/CurvedShader/blob/main/Screenshots/ui.png?raw=true)
 
 
