@@ -26,15 +26,25 @@ class RenderView: MTKView {
     
     configureMetal()
     
-    objects.append(Cube(device: self.device!, position: SIMD3<Float>(-4,0,-8)))
-    
-    objects.append(Cube(device: self.device!, position: SIMD3<Float>(-3,0,-5)))
-    
-    objects.append(Cube(device: self.device!, position: SIMD3<Float>(2,0,0)))
-    
-    objects.append(Cube(device: self.device!, position: SIMD3<Float>(-2,0,0)))
-    
-    
+    for y in (0...5).reversed() {
+      for x in (0...5).reversed() {
+        
+        // Randomly decide to place a cube
+        guard Bool.random() else {
+          continue
+        }
+        
+        let multiplier = 4
+        
+        let size = SIMD3<Float>(1,1,1)
+        let position = SIMD3<Float>(-Float(x * multiplier),0,-Float(y * multiplier))
+        let color = SIMD3<Float>.random(in: 0...1)
+        
+        objects.append(Cube(device: self.device!, size: size, position: position, color: color))
+        
+      }
+    }
+
   }
   
   required init(coder: NSCoder) {
@@ -52,8 +62,10 @@ class RenderView: MTKView {
 //    let world = SCNMatrix4MakeTranslation(0, 0, 0)
 //    let worldSimd = simd_float4x4(world)
     
-    let camera = SCNMatrix4MakeTranslation(0, 0, -5)
-    let camera2 = SCNMatrix4Rotate(camera, CGFloat(deg2rad(40)), 0, 1, 0)
+    let zCamera = CGFloat(self.uiDelegate!.parent.zCamera)
+    
+    let camera = SCNMatrix4MakeTranslation(0, 0, zCamera)
+    let camera2 = SCNMatrix4Rotate(camera, CGFloat(deg2rad(40)), 1, 0, 0)
     let cameraSimd = simd_float4x4(camera2)
     
     let fovRadians: Float = deg2rad(85)
@@ -77,27 +89,27 @@ class RenderView: MTKView {
     return buffer
   }
   
-  func getVertexDescriptor() -> MTLVertexDescriptor {
-    let mtlVertexDescriptor = MTLVertexDescriptor()
-
-    mtlVertexDescriptor.attributes[0].format = MTLVertexFormat.float3
-    mtlVertexDescriptor.attributes[0].offset = 0
-    mtlVertexDescriptor.attributes[0].bufferIndex = 0
-
-    mtlVertexDescriptor.attributes[1].format = MTLVertexFormat.float2
-    mtlVertexDescriptor.attributes[1].offset = 0
-    mtlVertexDescriptor.attributes[1].bufferIndex = 1
-    
-    mtlVertexDescriptor.layouts[0].stride = 12
-    mtlVertexDescriptor.layouts[0].stepRate = 1
-    mtlVertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunction.perVertex
-
-    mtlVertexDescriptor.layouts[1].stride = 8
-    mtlVertexDescriptor.layouts[1].stepRate = 1
-    mtlVertexDescriptor.layouts[1].stepFunction = MTLVertexStepFunction.perVertex
-    
-    return mtlVertexDescriptor
-  }
+//  func getVertexDescriptor() -> MTLVertexDescriptor {
+//    let mtlVertexDescriptor = MTLVertexDescriptor()
+//
+//    mtlVertexDescriptor.attributes[0].format = MTLVertexFormat.float3
+//    mtlVertexDescriptor.attributes[0].offset = 0
+//    mtlVertexDescriptor.attributes[0].bufferIndex = 0
+//
+//    mtlVertexDescriptor.attributes[1].format = MTLVertexFormat.float2
+//    mtlVertexDescriptor.attributes[1].offset = 0
+//    mtlVertexDescriptor.attributes[1].bufferIndex = 1
+//
+//    mtlVertexDescriptor.layouts[0].stride = 12
+//    mtlVertexDescriptor.layouts[0].stepRate = 1
+//    mtlVertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunction.perVertex
+//
+//    mtlVertexDescriptor.layouts[1].stride = 8
+//    mtlVertexDescriptor.layouts[1].stepRate = 1
+//    mtlVertexDescriptor.layouts[1].stepFunction = MTLVertexStepFunction.perVertex
+//
+//    return mtlVertexDescriptor
+//  }
   
   func configureMetal() {
     
@@ -131,7 +143,7 @@ class RenderView: MTKView {
     let renderPassDescriptor = MTLRenderPassDescriptor()
     renderPassDescriptor.colorAttachments[0].texture = drawable.texture
     renderPassDescriptor.colorAttachments[0].loadAction = .clear
-    renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 104.0/255.0, blue: 5.0/255.0, alpha: 1.0)
+    renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
     renderPassDescriptor.colorAttachments[0].storeAction = .store
 
     // Set up command buffer and encoder
@@ -145,6 +157,7 @@ class RenderView: MTKView {
       return
     }
     
+    // Loop through all objects and issue a render command for each
     for (index, object) in objects.enumerated() {
       let loadAction: MTLLoadAction = index == 0 ? .clear : .load
       renderPassDescriptor.colorAttachments[0].loadAction = loadAction

@@ -13,6 +13,7 @@ struct MetalViewRepresentable: NSViewRepresentable {
   typealias NSViewType = RenderView
   
   @Binding var curve: Float
+  @Binding var zCamera: Float
 
   func makeNSView(context: NSViewRepresentableContext<MetalViewRepresentable>) -> NSViewType {
     let renderView = NSViewType()

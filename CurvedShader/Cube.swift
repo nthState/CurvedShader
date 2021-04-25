@@ -12,23 +12,27 @@ class Cube {
   
   var vertexBuffer: MTLBuffer!
   
-  let A = Vertex(x: -1.0, y:   1.0, z:   1.0, r:  1.0, g:  0.0, b:  0.0, a:  1.0)
-  let B = Vertex(x: -1.0, y:  -1.0, z:   1.0, r:  0.0, g:  1.0, b:  0.0, a:  1.0)
-  let C = Vertex(x:  1.0, y:  -1.0, z:   1.0, r:  0.0, g:  0.0, b:  1.0, a:  1.0)
-  let D = Vertex(x:  1.0, y:   1.0, z:   1.0, r:  0.1, g:  0.6, b:  0.4, a:  1.0)
-  
-  let Q = Vertex(x: -1.0, y:   1.0, z:  -1.0, r:  1.0, g:  0.0, b:  0.0, a:  1.0)
-  let R = Vertex(x:  1.0, y:   1.0, z:  -1.0, r:  0.0, g:  1.0, b:  0.0, a:  1.0)
-  let S = Vertex(x: -1.0, y:  -1.0, z:  -1.0, r:  0.0, g:  0.0, b:  1.0, a:  1.0)
-  let T = Vertex(x:  1.0, y:  -1.0, z:  -1.0, r:  0.1, g:  0.6, b:  0.4, a:  1.0)
+ 
   
   var verticesArray:Array<Vertex> = []
   
   var vertexCount = 8
   
   var position: SIMD3<Float> = .zero
+  var color: SIMD3<Float> = .zero
   
-  init(device: MTLDevice, position: SIMD3<Float>) {
+  init(device: MTLDevice, size: SIMD3<Float> = .one, position: SIMD3<Float>, color: SIMD3<Float>) {
+    
+    let A = Vertex(x: -size.x, y:   size.y, z:   size.z)
+    let B = Vertex(x: -size.x, y:  -size.y, z:   size.z)
+    let C = Vertex(x:  size.x, y:  -size.y, z:   size.z)
+    let D = Vertex(x:  size.x, y:   size.y, z:   size.z)
+    
+    let Q = Vertex(x: -size.x, y:   size.y, z:  -size.z)
+    let R = Vertex(x:  size.x, y:   size.y, z:  -size.z)
+    let S = Vertex(x: -size.x, y:  -size.y, z:  -size.z)
+    let T = Vertex(x:  size.x, y:  -size.y, z:  -size.z)
+    
     verticesArray = [
       A,B,C ,A,C,D,   //Front
       R,T,S ,Q,R,S,   //Back
@@ -44,13 +48,15 @@ class Cube {
     
     var vertexData = Array<Float>()
     for vertex in verticesArray {
-      vertexData += vertex.floatBuffer()
+      //vertexData += vertex.floatBuffer()
+      vertexData += [vertex.x, vertex.y, vertex.z, color.x, color.y, color.z, 1.0]
     }
     
     let dataSize = vertexData.count * MemoryLayout.size(ofValue: vertexData[0])
     vertexBuffer = device.makeBuffer(bytes: vertexData, length: dataSize, options: [])
     
     self.position = position
+    self.color = color
   }
   
   func getTransform() -> float4x4 {

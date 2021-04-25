@@ -91,9 +91,5 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
 
 fragment float4 fragmentShader(ColorInOut in [[stage_in]],
                                constant Uniforms & uniforms [[ buffer(1) ]]) {
-  
-  //matrix_float4x4 v = uniforms.cameraMatrix;
-  
-  //return float4(1.0, 0.0, 0.0, 1.0);
   return in.texCoord;
 }
