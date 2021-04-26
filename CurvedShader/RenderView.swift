@@ -64,7 +64,7 @@ class RenderView: MTKView {
     
     let cameraRotation = SCNMatrix4Rotate(SCNMatrix4Identity, CGFloat(deg2rad(zCameraAngle)), 1, 0, 0)
     let cameraTranslation = SCNMatrix4Translate(SCNMatrix4Identity, 0, zCameraHeight, zCamera)
-    let camera = SCNMatrix4Mult(cameraTranslation, cameraRotation)
+    let camera = SCNMatrix4Mult(cameraRotation, cameraTranslation)
     let cameraSimd = simd_float4x4(camera)
     
     //os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "\(cameraSimd.position())")
@@ -80,7 +80,8 @@ class RenderView: MTKView {
                            worldMatrix: worldSimd,
                            cameraMatrix: cameraSimd,
                            projectionMatrix: perspectiveSimd,
-                           worldInverseMatrix: (worldSimd * modelSimd).inverse)
+                           worldInverseMatrix: (worldSimd * modelSimd).inverse,
+                           cameraInverseMatrix: cameraSimd.inverse)
     
     let uniformBufferSize = alignedUniformsSize
 
@@ -150,7 +151,7 @@ class RenderView: MTKView {
       return
     }
     
-    let uniformBuffer = getUniformBuffer(worldTransform: object.getTransform())
+    let uniformBuffer = getUniformBuffer(modelTransform: object.getTransform())
     
     commandEncoder.label = "Preview display"
     commandEncoder.setCullMode(MTLCullMode.front)

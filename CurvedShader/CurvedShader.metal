@@ -19,27 +19,34 @@ typedef struct {
   float4 texCoord;
 } ColorInOut;
 
-//vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) ]],
-//                               constant Uniforms & uniforms [[ buffer(1) ]],
-//                               constant float & curvature [[ buffer(2) ]],
-//                               unsigned int vid [[ vertex_id ]]) {
+//void main()
+//{
+//  vec4 worldPos = modelMatrix * vec4( positions, 1 );
+//  vec4 viewPos = viewMatrix * worldPos;
+//  vec4 finalPos = projectionMatrix * vec4(ApplyCylinderTransform(viewPos.xyz, 20.0, 5.0).xyz, 1.0);
 //
-//  VertexIn VertexIn = vertex_array[vid];
+//  gl_Position = finalPos;
 //
-//  float4x4 mv_Matrix = uniforms.modelMatrix;
-//  float4x4 cam_Matrix = uniforms.cameraMatrix;
-//  float4x4 wrld_Matrix = uniforms.worldMatrix;
-//  float4x4 proj_Matrix = uniforms.projectionMatrix;
+//  vWorldPos = worldPos.xyz;
+//  vWorldNormal = CalcInverseTranspose(mat3(modelMatrix)) * normals;
+//  vWorldView = worldPos.xyz - cameraMatrix[3].xyz;
+//  vTexCoord = texCoords;
+//}
+
+//float3 ApplyCylinderTransform(float3 v, float cylinderRadius, float cylinderDist)
+//{
+//  //return v;
+//  float angle = v.z / cylinderRadius;  // the two (2 * PI * r) cancel out
+//  return float3(v.x,
+//        -cylinderRadius + cos(angle) * (cylinderRadius + v.y),
+//        -cylinderDist + sin(angle) * (cylinderRadius + v.y));
+//}
 //
-//  float4x4 modelTransform = wrld_Matrix * mv_Matrix; // model world transform
-//  float4x4 modelViewTransform = cam_Matrix * modelTransform; // Model/view tranform
-//  float4x4 modelViewProjectionTransform = proj_Matrix * modelViewTransform; // Mvp
-//
-//  ColorInOut out;
-//  //out.position = float4(VertexIn.position, 1);
-//  out.position = modelViewProjectionTransform * float4(VertexIn.position,1);
-//  out.texCoord = VertexIn.texCoord;
-//  return out;
+//matrix_float3x3 CalcInverseTranspose(matrix_float3x3 mat)
+//{
+//  float3 lengths = float3( length(mat[0]), length(mat[1]), length(mat[2]) );
+//  lengths = 1.0 / (lengths * lengths);
+//  return matrix_float3x3(mat[0]*lengths.x, mat[1]*lengths.y, mat[2]*lengths.z);
 //}
 
 vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) ]],
@@ -54,19 +61,22 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   float4x4 world_matrix = uniforms.worldMatrix;
   float4x4 projection_matrix = uniforms.projectionMatrix;
   float4x4 worldInverse_matrix = uniforms.worldInverseMatrix;
+  float4x4 cameraInverse_matrix = uniforms.cameraInverseMatrix;
   
   float4x4 modelTransform = world_matrix * model_matrix; // model world transform
   float4x4 modelViewTransform = camera_matrix * modelTransform; // Model/view tranform
   float4x4 modelViewProjectionTransform = projection_matrix * modelViewTransform; // Mvp
   
   float4 pos = float4(VertexIn.position, 1);
-  float4 vv = modelTransform * pos;
+  float4 vv = modelViewTransform * pos;
   vv.xyz -= camera_matrix.columns[3].xyz;
   vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
   pos += worldInverse_matrix * vv;
   
+  float4 finalPos = modelViewProjectionTransform * pos;
+  
   ColorInOut out;
-  out.position = modelViewProjectionTransform * pos;
+  out.position = finalPos;
   out.texCoord = VertexIn.texCoord;
   return out;
 }
@@ -75,3 +85,4 @@ fragment float4 fragmentShader(ColorInOut in [[stage_in]],
                                constant Uniforms & uniforms [[ buffer(1) ]]) {
   return in.texCoord;
 }
+
