@@ -7,7 +7,7 @@ to try it out.
 
 ## Issues
 
-- [ ] Rotating a camera, and translation transform is incorrect
+- [ ] Setting the angle of the camera breaks the camera transform
 
 ## Screenshots
 
