@@ -63,6 +63,9 @@ class RenderView: MTKView {
     
     //let viewSimd = cameraTranslation * cameraRotation
     let viewSimd = cameraRotation * cameraTranslation
+//    let viewSimd = lookAt(eye: float3(x: 0, y: Float(zCameraHeight), z: Float(zCamera)),
+//                          center: float3(x: 0, y: 0, z: Float(zCamera + 4)),
+//                          up: float3(x: 0, y: 0, z: 1))
     
     os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "pos: \(viewSimd.position())")
     
