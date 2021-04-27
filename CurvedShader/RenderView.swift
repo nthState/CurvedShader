@@ -82,7 +82,7 @@ class RenderView: MTKView {
     let worldInverse = modelViewTransform.inverse
     
     var uniform = Uniforms(modelViewTransform: modelViewTransform,
-                           camera: viewSimd,
+                           camera: cameraTranslation,
                            worldInverse: worldInverse,
                            modelViewProjectionTransform: modelViewProjectionTransform)
     
