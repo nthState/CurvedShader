@@ -28,7 +28,7 @@ class RenderView: MTKView {
     configureMetal()
     
     for z in (0...20).reversed() {
-      for x in (0...1) {
+      for x in (-3...3) {
         
         let multiplier = 4
         
