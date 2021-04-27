@@ -9,10 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
   
-  @State var curve: Float = 0.01
+  @State var curve: Float = -0.01
   @State var zCamera: Float = 5.0
-  @State var zCameraAngle: Float = 39
-  @State var zCameraHeight: Float = 5
+  @State var zCameraAngle: Float = 0
+  @State var zCameraHeight: Float = -5
   
     var body: some View {
         ZStack {
