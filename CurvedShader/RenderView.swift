@@ -27,7 +27,7 @@ class RenderView: MTKView {
     
     configureMetal()
     
-    for z in (0...20) {
+    for z in (0...20).reversed() {
       for x in (0...1) {
         
         let multiplier = 4
@@ -57,17 +57,12 @@ class RenderView: MTKView {
     let zCameraAngle = self.uiDelegate!.parent.zCameraAngle
     let zCameraHeight = CGFloat(self.uiDelegate!.parent.zCameraHeight)
     
-    //let camRot = float4x4(simd_quatf(angle: deg2rad(zCameraAngle), axis: SIMD3<Float>(1,0,0)))
     let cameraRotation = simd_float4x4(SCNMatrix4Rotate(SCNMatrix4Identity, CGFloat(deg2rad(zCameraAngle)), 1, 0, 0))
     let cameraTranslation = simd_float4x4(SCNMatrix4Translate(SCNMatrix4Identity, 0, zCameraHeight, zCamera))
     
-    //let viewSimd = cameraTranslation * cameraRotation
     let viewSimd = cameraRotation * cameraTranslation
-//    let viewSimd = lookAt(eye: float3(x: 0, y: Float(zCameraHeight), z: Float(zCamera)),
-//                          center: float3(x: 0, y: 0, z: Float(zCamera + 4)),
-//                          up: float3(x: 0, y: 0, z: 1))
     
-    os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "pos: \(viewSimd.position())")
+    //os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "pos: \(viewSimd.position())")
     
     let fovRadians: Float = deg2rad(85)
     let aspect = Float(self.bounds.size.width / self.bounds.size.height)
