@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		671347DA263601290009B532 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671347D9263601290009B532 /* Logging.swift */; };
-		67BD6CDA2637529B00BC62B7 /* Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 67BD6CD92637529B00BC62B7 /* Utilities.m */; };
 		67BE1AAD263462AC00C5B377 /* CurvedShaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */; };
 		67BE1AAF263462AC00C5B377 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE1AAE263462AC00C5B377 /* ContentView.swift */; };
 		67BE1AB1263462AD00C5B377 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67BE1AB0263462AD00C5B377 /* Assets.xcassets */; };
@@ -24,8 +23,6 @@
 
 /* Begin PBXFileReference section */
 		671347D9263601290009B532 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
-		67BD6CD82637529B00BC62B7 /* Utilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Utilities.h; sourceTree = "<group>"; };
-		67BD6CD92637529B00BC62B7 /* Utilities.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Utilities.m; sourceTree = "<group>"; };
 		67BD6CDC263752AE00BC62B7 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		67BE1AA9263462AC00C5B377 /* CurvedShader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CurvedShader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurvedShaderApp.swift; sourceTree = "<group>"; };
@@ -91,8 +88,6 @@
 				67BE1AB6263462AD00C5B377 /* CurvedShader.entitlements */,
 				671347D9263601290009B532 /* Logging.swift */,
 				67BE1AB2263462AD00C5B377 /* Preview Content */,
-				67BD6CD82637529B00BC62B7 /* Utilities.h */,
-				67BD6CD92637529B00BC62B7 /* Utilities.m */,
 				67BD6CDC263752AE00BC62B7 /* BridgingHeader.h */,
 			);
 			path = CurvedShader;
@@ -180,7 +175,6 @@
 				67BE1ABE263462D300C5B377 /* MetalViewRepresentable.swift in Sources */,
 				67BE1AC12634632300C5B377 /* RenderView.swift in Sources */,
 				67BE1AC42634641F00C5B377 /* CurvedShader.metal in Sources */,
-				67BD6CDA2637529B00BC62B7 /* Utilities.m in Sources */,
 				67BE1AAD263462AC00C5B377 /* CurvedShaderApp.swift in Sources */,
 				67BE1ADE2634A6EA00C5B377 /* float4x4+Extensions.swift in Sources */,
 				67BE1AD32634690500C5B377 /* Cube.swift in Sources */,

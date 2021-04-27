@@ -47,23 +47,6 @@ class RenderView: MTKView {
     fatalError("init(coder:) has not been implemented")
   }
   
-  func makePerspective(
-    fovyDegrees fovy: Float,
-    aspectRatio: Float,
-    nearZ: Float,
-    farZ: Float
-  ) -> simd_float4x4 {
-    let ys = 1 / tanf(fovy * 0.5)
-    let xs = ys / aspectRatio
-    let zs = farZ / (nearZ - farZ)
-    return simd_float4x4([
-      float4(xs,  0, 0,   0),
-      float4( 0, ys, 0,   0),
-      float4( 0,  0, zs, -1),
-      float4( 0,  0, zs * nearZ, 0)
-    ])
-  }
-  
   func deg2rad(_ number: Float) -> Float {
       return number * .pi / 180
   }
@@ -79,7 +62,6 @@ class RenderView: MTKView {
     let view = cameraTranslation //SCNMatrix4Mult(cameraTranslation, cameraRotation)
     let viewSimd = simd_float4x4(view)
 
-    
     //os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "\(cameraSimd.position())")
     
     let fovRadians: Float = deg2rad(85)
@@ -87,18 +69,13 @@ class RenderView: MTKView {
     let nearZ: Float = 1
     let farZ: Float = 100
     let perspective = GLKMatrix4MakePerspective(fovRadians, aspect, nearZ, farZ)
-    //let perspectiveSimd = float4x4(matrix: perspective)
-    let perspectiveSimd = makePerspective(fovyDegrees: fovRadians, aspectRatio: aspect, nearZ: nearZ, farZ: farZ)
+    let perspectiveSimd = float4x4(matrix: perspective)
     
-
     // model to world, to camera, to projection
     let modelViewProjectionTransform = perspectiveSimd * viewSimd * worldSimd * modelSimd
-    
     let modelViewTransform = worldSimd * modelSimd
-    
     let worldInverse = modelViewTransform.inverse
     
-///    var uniform = Uniforms(modelViewProjectionTransform: modelViewProjectionTransform)
     var uniform = Uniforms(modelViewTransform: modelViewTransform,
                            camera: viewSimd,
                            worldInverse: worldInverse,

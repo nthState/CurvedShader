@@ -5,7 +5,11 @@
 I'm attempting to re-create the same shader effect as Animal Crossing, I've made a simple-as-possible Metal based SwiftUI macOS App
 to try it out.
 
-I'm still trying to work out how to convert the Unity Shader code into Metal
+## Issues
+
+- [ ] Rotating a camera, and translation transform is incorrect
+
+## Screenshots
 
 ![Demo 1l](https://github.com/nthState/CurvedShader/blob/main/Screenshots/demo.gif?raw=true)
 
@@ -15,11 +19,6 @@ I'm still trying to work out how to convert the Unity Shader code into Metal
 
 Download the code and run, use the `z Distance` slider to move the camera along the Z-Axis.
 
-## Issues
-
-- [ ] The Perspective matrix * vertex is in the wrong direction
-- [ ] The transforms are incorrect 
-- [ ] The perspective definately seems off, possibly the Unity to Metal converstion is wrong
 
 ## Shader Info
 
@@ -54,24 +53,18 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
   
   VertexIn VertexIn = vertex_array[vid];
   
-  float4x4 model_matrix = uniforms.modelMatrix;
-  float4x4 camera_matrix = uniforms.cameraMatrix;
-  float4x4 world_matrix = uniforms.worldMatrix;
-  float4x4 projection_matrix = uniforms.projectionMatrix;
-  float4x4 worldInverse_matrix = uniforms.worldInverseMatrix;
-  
-  float4x4 modelTransform = world_matrix * model_matrix; // model world transform
-  float4x4 modelViewTransform = camera_matrix * modelTransform; // Model/view tranform
-  float4x4 modelViewProjectionTransform = projection_matrix * modelViewTransform; // Mvp
+
   
   float4 pos = float4(VertexIn.position, 1);
-  float4 vv = modelTransform * pos;
-  vv.xyz -= camera_matrix.columns[3].xyz;
+  float4 vv = uniforms.modelViewTransform * pos;
+  vv.xyz += uniforms.camera.columns[3].xyz;
   vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
-  pos += worldInverse_matrix * vv;
+  pos -= uniforms.worldInverse * vv;
+
+  float4 finalPos = uniforms.modelViewProjectionTransform * pos;
   
   ColorInOut out;
-  out.position = modelViewProjectionTransform * pos;
+  out.position = finalPos;
   out.texCoord = VertexIn.texCoord;
   return out;
 }

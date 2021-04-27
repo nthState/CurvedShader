@@ -9,6 +9,5 @@
 #define BridgingHeader_h
 
 #import "ShaderTypes.h"
-#import "Utilities.h"
 
 #endif /* BridgingHeader_h */
