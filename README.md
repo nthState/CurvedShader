@@ -17,6 +17,8 @@ Download the code and run, use the `z Distance` slider to move the camera along 
 
 ## Issues
 
+- [ ] The Perspective matrix * vertex is in the wrong direction
+- [ ] The transforms are incorrect 
 - [ ] The perspective definately seems off, possibly the Unity to Metal converstion is wrong
 
 ## Shader Info

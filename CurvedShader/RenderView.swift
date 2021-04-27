@@ -27,18 +27,13 @@ class RenderView: MTKView {
     
     configureMetal()
     
-    for y in (0...20).reversed() {
-      for x in (0...5).reversed() {
-        
-        // Randomly decide to place a cube
-        guard Bool.random() else {
-          continue
-        }
+    for z in (0...20) {
+      for x in (0...1) {
         
         let multiplier = 4
         
         let size = SIMD3<Float>(1,1,1)
-        let position = SIMD3<Float>(-Float(x * multiplier),0,-Float(y * multiplier))
+        let position = SIMD3<Float>(-Float(x * multiplier), 0, -Float(z * multiplier))
         let color = SIMD3<Float>.random(in: 0...1)
         
         objects.append(Cube(device: self.device!, size: size, position: position, color: color))
@@ -52,36 +47,62 @@ class RenderView: MTKView {
     fatalError("init(coder:) has not been implemented")
   }
   
+  func makePerspective(
+    fovyDegrees fovy: Float,
+    aspectRatio: Float,
+    nearZ: Float,
+    farZ: Float
+  ) -> simd_float4x4 {
+    let ys = 1 / tanf(fovy * 0.5)
+    let xs = ys / aspectRatio
+    let zs = farZ / (nearZ - farZ)
+    return simd_float4x4([
+      float4(xs,  0, 0,   0),
+      float4( 0, ys, 0,   0),
+      float4( 0,  0, zs, -1),
+      float4( 0,  0, zs * nearZ, 0)
+    ])
+  }
+  
   func deg2rad(_ number: Float) -> Float {
       return number * .pi / 180
   }
   
   func getUniformBuffer(modelTransform modelSimd: float4x4 = matrix_identity_float4x4, worldTransform worldSimd: float4x4 = matrix_identity_float4x4) -> MTLBuffer {
     
-    let zCamera = CGFloat(self.uiDelegate!.parent.zCamera)
+    let zCamera = -CGFloat(self.uiDelegate!.parent.zCamera)
     let zCameraAngle = self.uiDelegate!.parent.zCameraAngle
     let zCameraHeight = CGFloat(self.uiDelegate!.parent.zCameraHeight)
     
     let cameraRotation = SCNMatrix4Rotate(SCNMatrix4Identity, CGFloat(deg2rad(zCameraAngle)), 1, 0, 0)
     let cameraTranslation = SCNMatrix4Translate(SCNMatrix4Identity, 0, zCameraHeight, zCamera)
-    let camera = SCNMatrix4Mult(cameraRotation, cameraTranslation)
-    let cameraSimd = simd_float4x4(camera)
+    let view = cameraTranslation //SCNMatrix4Mult(cameraTranslation, cameraRotation)
+    let viewSimd = simd_float4x4(view)
+
     
     //os_log("%{PUBLIC}@", log: OSLog.camera, type: .debug, "\(cameraSimd.position())")
     
-    let fovRadians: Float = deg2rad(90)
+    let fovRadians: Float = deg2rad(85)
     let aspect = Float(self.bounds.size.width / self.bounds.size.height)
-    let nearZ: Float = 0.01
+    let nearZ: Float = 1
     let farZ: Float = 100
     let perspective = GLKMatrix4MakePerspective(fovRadians, aspect, nearZ, farZ)
-    let perspectiveSimd = float4x4(matrix: perspective)
+    //let perspectiveSimd = float4x4(matrix: perspective)
+    let perspectiveSimd = makePerspective(fovyDegrees: fovRadians, aspectRatio: aspect, nearZ: nearZ, farZ: farZ)
     
-    var uniform = Uniforms(modelMatrix: modelSimd,
-                           worldMatrix: worldSimd,
-                           cameraMatrix: cameraSimd,
-                           projectionMatrix: perspectiveSimd,
-                           worldInverseMatrix: (worldSimd * modelSimd).inverse,
-                           cameraInverseMatrix: cameraSimd.inverse)
+
+    // model to world, to camera, to projection
+    let modelViewProjectionTransform = perspectiveSimd * viewSimd * worldSimd * modelSimd
+    
+    let modelViewTransform = worldSimd * modelSimd
+    
+    let worldInverse = modelViewTransform.inverse
+    
+///    var uniform = Uniforms(modelViewProjectionTransform: modelViewProjectionTransform)
+    var uniform = Uniforms(modelViewTransform: modelViewTransform,
+                           camera: viewSimd,
+                           worldInverse: worldInverse,
+                           modelViewProjectionTransform: modelViewProjectionTransform)
     
     let uniformBufferSize = alignedUniformsSize
 
@@ -150,11 +171,11 @@ class RenderView: MTKView {
       print("Failed to create Metal command encoder")
       return
     }
-    
-    let uniformBuffer = getUniformBuffer(modelTransform: object.getTransform())
+    //values not rendered into the screen
+    let uniformBuffer = getUniformBuffer(worldTransform: object.getTransform())
     
     commandEncoder.label = "Preview display"
-    commandEncoder.setCullMode(MTLCullMode.front)
+    //commandEncoder.setCullMode(MTLCullMode.front)
     commandEncoder.setRenderPipelineState(renderPipelineState!)
     
     commandEncoder.setVertexBuffer(object.vertexBuffer, offset: 0, index: 0)

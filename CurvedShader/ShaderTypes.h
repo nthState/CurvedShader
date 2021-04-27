@@ -11,12 +11,10 @@
 #include <simd/simd.h>
 
 typedef struct {
-    matrix_float4x4 modelMatrix;
-    matrix_float4x4 worldMatrix;
-    matrix_float4x4 cameraMatrix;
-    matrix_float4x4 projectionMatrix;
-  matrix_float4x4 worldInverseMatrix;
-  matrix_float4x4 cameraInverseMatrix;
+  matrix_float4x4 modelViewTransform;
+  matrix_float4x4 camera;
+  matrix_float4x4 worldInverse;
+  matrix_float4x4 modelViewProjectionTransform;
 } Uniforms;
 
 #endif /* Shared_h */
