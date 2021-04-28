@@ -73,7 +73,8 @@ vertex ColorInOut vertexShader(const device VertexIn* vertex_array [[ buffer(0) 
 }
 
 fragment float4 fragmentShader(ColorInOut in [[stage_in]],
-                               constant Uniforms & uniforms [[ buffer(1) ]]) {
+                               constant Uniforms & uniforms [[ buffer(1) ]],
+                               texture2d<float> tex) {
   return in.texCoord;
 }
 

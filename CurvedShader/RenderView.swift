@@ -12,9 +12,21 @@ import os.log
 
 class RenderView: MTKView {
   
-  private var renderPipelineState: MTLRenderPipelineState!
+  private var renderPipelineStateScreen: MTLRenderPipelineState!
+  private var renderPipelineStateCurvedShader: MTLRenderPipelineState!
+  private var renderPipelineStateTiltShift: MTLComputePipelineState!
+  
+  /// Threads per thread group
+  let threadsPerThreadGroup = MTLSize(width: 1, height: 1, depth: 1)
+  
+  /// Size of image
+  var mtlSize: MTLSize!
   
   private var commandQueue: MTLCommandQueue?
+  
+  var texturesBuilt: Bool = false
+  var renderTarget: MTLTexture!
+  var accumulationTarget: MTLTexture!
   
   var uiDelegate: Coordinator?
   
@@ -24,6 +36,8 @@ class RenderView: MTKView {
   
   init() {
     super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
+    
+    self.framebufferOnly = false
     
     configureMetal()
     
@@ -40,7 +54,7 @@ class RenderView: MTKView {
         
       }
     }
-
+    
   }
   
   required init(coder: NSCoder) {
@@ -48,7 +62,7 @@ class RenderView: MTKView {
   }
   
   func deg2rad(_ number: Float) -> Float {
-      return number * .pi / 180
+    return number * .pi / 180
   }
   
   func getUniformBuffer(modelTransform modelSimd: float4x4 = matrix_identity_float4x4, worldTransform worldSimd: float4x4 = matrix_identity_float4x4) -> MTLBuffer {
@@ -82,7 +96,7 @@ class RenderView: MTKView {
                            modelViewProjectionTransform: modelViewProjectionTransform)
     
     let uniformBufferSize = alignedUniformsSize
-
+    
     let buffer = self.device!.makeBuffer(bytes: &uniform, length: uniformBufferSize, options: [MTLResourceOptions.storageModeShared])!
     
     return buffer
@@ -98,26 +112,65 @@ class RenderView: MTKView {
     pipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
     
     do {
-      renderPipelineState = try device!.makeRenderPipelineState(descriptor: pipelineDescriptor)
+      renderPipelineStateCurvedShader = try device!.makeRenderPipelineState(descriptor: pipelineDescriptor)
     } catch {
-      fatalError("Unable to create preview Metal view pipeline state. (\(error))")
+      fatalError("Unable to create preview Metal view pipeline state renderPipelineStateCurvedShader. (\(error))")
+    }
+    
+    let pipelineDescriptorScreen = MTLRenderPipelineDescriptor()
+    pipelineDescriptorScreen.vertexFunction = defaultLibrary.makeFunction(name: "mapTexture")
+    pipelineDescriptorScreen.fragmentFunction = defaultLibrary.makeFunction(name: "displayTexture")
+    pipelineDescriptorScreen.colorAttachments[0].pixelFormat = .bgra8Unorm
+    
+    do {
+      renderPipelineStateScreen = try device!.makeRenderPipelineState(descriptor: pipelineDescriptorScreen)
+    } catch {
+      fatalError("Unable to create preview Metal view pipeline state pipelineDescriptorScreen. (\(error))")
+    }
+    
+    do {
+      if let function = defaultLibrary.makeFunction(name: "tiltShift") {
+        renderPipelineStateTiltShift = try self.device!.makeComputePipelineState(function: function)
+      }
+    } catch {
+      fatalError("Unable to create preview Metal view pipeline state renderPipelineStateCurvedShader. (\(error))")
     }
     
     commandQueue = device!.makeCommandQueue()
   }
   
-  override func draw(_ rect: CGRect) {
-
-    guard let drawable = (self.layer as? CAMetalLayer)?.nextDrawable() else {
-      return
-    }
+  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+    buildTextures(size: size)
+  }
+  
+  func buildTextures(size: CGSize) {
     
+    mtlSize = MTLSize(width: Int(size.width), height: Int(size.height), depth: 1)
+    
+    let renderTargetDescriptor = MTLTextureDescriptor()
+    renderTargetDescriptor.pixelFormat = .bgra8Unorm
+    //renderTargetDescriptor.textureType = .type2D
+    renderTargetDescriptor.width = Int(size.width)
+    renderTargetDescriptor.height = Int(size.height)
+    //renderTargetDescriptor.storageMode = .private
+    renderTargetDescriptor.usage = [.shaderRead, .shaderWrite, .renderTarget]
+    renderTarget = device!.makeTexture(descriptor: renderTargetDescriptor)
+    accumulationTarget = device!.makeTexture(descriptor: renderTargetDescriptor)
+  }
+  
+  override func draw(_ rect: CGRect) {
+    
+    if texturesBuilt == false {
+      buildTextures(size: self.bounds.size)
+      texturesBuilt = true
+    }
+
     let renderPassDescriptor = MTLRenderPassDescriptor()
-    renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+    renderPassDescriptor.colorAttachments[0].texture = accumulationTarget
     renderPassDescriptor.colorAttachments[0].loadAction = .clear
     renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0)
     renderPassDescriptor.colorAttachments[0].storeAction = .store
-
+    
     // Set up command buffer and encoder
     guard let commandQueue = commandQueue else {
       print("Failed to create Metal command queue")
@@ -134,38 +187,68 @@ class RenderView: MTKView {
       let loadAction: MTLLoadAction = index == 0 ? .clear : .load
       renderPassDescriptor.colorAttachments[0].loadAction = loadAction
       
-      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor, loadAction: loadAction)
+      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
     }
     
-    // Draw to the screen.
-    commandBuffer.present(drawable)
+    applyTiltShift(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor, loadAction: .load)
+
+    drawToScreen(commandBuffer: commandBuffer)
+  }
+  
+  func drawToScreen(commandBuffer: MTLCommandBuffer) {
+    guard let currentRenderPassDescriptor = self.currentRenderPassDescriptor,
+          let currentDrawable = self.currentDrawable else {
+      return
+    }
+    
+    guard let encoder = commandBuffer.makeRenderCommandEncoder(descriptor: currentRenderPassDescriptor) else {
+      return
+    }
+    encoder.pushDebugGroup("RenderFrame")
+    encoder.setRenderPipelineState(renderPipelineStateScreen)
+    encoder.setFragmentTexture(renderTarget, index: 0)
+    encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4, instanceCount: 1)
+    encoder.popDebugGroup()
+    encoder.endEncoding()
+    commandBuffer.present(currentDrawable)
     commandBuffer.commit()
   }
   
-  func drawObject(object: Cube, commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor, loadAction: MTLLoadAction) {
+  func drawObject(object: Cube, commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor) {
     
     guard let commandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
       print("Failed to create Metal command encoder")
       return
     }
-    //values not rendered into the screen
+    
     let uniformBuffer = getUniformBuffer(worldTransform: object.getTransform())
     
-    commandEncoder.label = "Preview display"
-    //commandEncoder.setCullMode(MTLCullMode.front)
-    commandEncoder.setRenderPipelineState(renderPipelineState!)
-    
+    commandEncoder.label = "Cube Shader"
+    commandEncoder.setRenderPipelineState(renderPipelineStateCurvedShader!)
     commandEncoder.setVertexBuffer(object.vertexBuffer, offset: 0, index: 0)
-    
     commandEncoder.setVertexBuffer(uniformBuffer, offset:0, index: 1)
     commandEncoder.setFragmentBuffer(uniformBuffer, offset:0, index: 1)
+    commandEncoder.setFragmentTexture(renderTarget, index: 0)
     
     var curve: Float = self.uiDelegate!.parent.curve
-    
     commandEncoder.setVertexBytes(&curve, length: MemoryLayout<Float>.stride, index: 2)
     
-
     commandEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: object.vertexCount, instanceCount: object.vertexCount / 3)
+    commandEncoder.endEncoding()
+  }
+  
+  func applyTiltShift(commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor, loadAction: MTLLoadAction) {
+    
+    guard let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
+      print("Failed to create Metal command encoder")
+      return
+    }
+    
+    commandEncoder.label = "Tilt Shift Shader"
+    commandEncoder.setComputePipelineState(renderPipelineStateTiltShift!)
+    commandEncoder.setTexture(accumulationTarget, index: 0)
+    commandEncoder.setTexture(renderTarget, index: 1)
+    commandEncoder.dispatchThreads(mtlSize, threadsPerThreadgroup: threadsPerThreadGroup)
     commandEncoder.endEncoding()
   }
   
