@@ -9,53 +9,47 @@
 using namespace metal;
 #import "ShaderTypes.h"
 
+
+
+float gauss(float x, float e)
+{
+  return exp(-pow(x, 2.0) / e);
+}
+
+//https://www.shadertoy.com/view/4sdGDB
 kernel void tiltShift(texture2d<float, access::read> inTexture [[texture(0)]],
                       texture2d<float, access::write> outTexture [[texture(1)]],
-                                    uint2 gid [[thread_position_in_grid]]) {
+                      uint2 gid [[thread_position_in_grid]]) {
   
-  const float bluramount  = 0.01;
-  const float center      = 1.1;
-  const float stepSize    = 0.004;
-  const float steps       = 2.0;
-
-  const float minOffs     = (float(steps-1.0)) / -2.0;
-  const float maxOffs     = (float(steps-1.0)) / +2.0;
+  const int blur_size = 30;
+  const float blur_width = 10.0;
   
-  float amount;
-  float4 blurred;
+  const float imageWidth = inTexture.get_width();
+  const float imageHeight = inTexture.get_height();
+  float2 iResolution = float2(imageWidth, imageHeight);
   
-  uint2 uv = gid;
+  float4 orig = inTexture.read(gid);
+  //float2 uv = float2(gid.xy);
   
-  //Work out how much to blur based on the mid point
-  amount = pow((uv.y * center) * 2.0 - 1.0, 2.0) * bluramount;
+  float2 pos = float2(gid.xy) / iResolution.xy;
+  //float4 pixval = float4(0.);
+  float tot = 0.0;
   
-  //This is the accumulation of color from the surrounding pixels in the texture
-  blurred = float4(0.0, 0.0, 0.0, 1.0);
+  float4 pixval = inTexture.read(gid);
   
-  //From minimum offset to maximum offset
-  for (float offsX = minOffs; offsX <= maxOffs; ++offsX) {
-    for (float offsY = minOffs; offsY <= maxOffs; ++offsY) {
-      
-      //copy the coord so we can mess with it
-      float2 temp_tcoord = float2(uv.xy);
-      
-      //work out which uv we want to sample now
-      temp_tcoord.x += offsX * amount * stepSize;
-      temp_tcoord.y += offsY * amount * stepSize;
-      
-      //accumulate the sample
-      //blurred += texture2D(colorSampler, temp_tcoord);
-      blurred += inTexture.read(uint2(temp_tcoord));
-      
-    } //for y
-  } //for x
+  const int nb = 2 * blur_size + 1;
   
-  //because we are doing an average, we divide by the amount (x AND y, hence steps * steps)
-  blurred /= float(steps * steps);
+  for (int x=0; x<nb; x++)
+  {
+    float x2 = blur_width * float(x - blur_size);
+    float2 ipos = pos + float2(x2 / iResolution.x, 0.0);
+    float g = gauss(x2, float(20 * blur_size) * 2.0 * pow(0.01 + abs(pos.y - 0.5), 2.3));
+    pixval += g * inTexture.read(uint2(ipos));
+    tot += g;
+  }
   
-  //return the final blurred color
-  //return blurred;
-  //outTexture.write(inTexture.read(gid), gid);
-  outTexture.write(blurred, gid);
+  float4 final = pixval / tot;
+  
+  outTexture.write(final, gid);
 }
 
