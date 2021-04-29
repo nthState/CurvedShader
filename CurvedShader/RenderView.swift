@@ -16,6 +16,10 @@ class RenderView: MTKView {
   private var renderPipelineStateCurvedShader: MTLRenderPipelineState!
   private var renderPipelineStateTiltShift: MTLComputePipelineState!
   
+  // Model
+  private var vertexDescriptor: MTLVertexDescriptor!
+  private var meshes: [MTKMesh] = []
+  
   /// Threads per thread group
   let threadsPerThreadGroup = MTLSize(width: 1, height: 1, depth: 1)
   
@@ -40,6 +44,8 @@ class RenderView: MTKView {
     self.framebufferOnly = false
     
     configureMetal()
+    
+    loadModel()
     
     for z in (0...20).reversed() {
       for x in (-3...3) {
@@ -139,6 +145,20 @@ class RenderView: MTKView {
     commandQueue = device!.makeCommandQueue()
   }
   
+  func loadModel() {
+    let modelUrl = Bundle.main.url(forResource: "suzanne", withExtension: "obj")
+    let vertexDescriptor = MDLVertexDescriptor()
+    vertexDescriptor.attributes[0] = MDLVertexAttribute(name: MDLVertexAttributePosition, format: .float3, offset: 0, bufferIndex: 0)
+    vertexDescriptor.attributes[1] = MDLVertexAttribute(name: MDLVertexAttributeNormal, format: .float3, offset: MemoryLayout<Float>.size * 3, bufferIndex: 0)
+    vertexDescriptor.attributes[2] = MDLVertexAttribute(name: MDLVertexAttributeTextureCoordinate, format: .float2, offset: MemoryLayout<Float>.size * 6, bufferIndex: 0)
+    vertexDescriptor.layouts[0] = MDLVertexBufferLayout(stride: MemoryLayout<Float>.size * 8)
+    self.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
+
+    let bufferAllocator = MTKMeshBufferAllocator(device: self.device!)
+    let asset = MDLAsset(url: modelUrl, vertexDescriptor: vertexDescriptor, bufferAllocator: bufferAllocator)
+    (_, meshes) = try! MTKMesh.newMeshes(asset: asset, device: self.device!)
+  }
+  
   func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
     buildTextures(size: size)
   }
@@ -190,6 +210,8 @@ class RenderView: MTKView {
       drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
     }
     
+    drawModel(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
+    
     applyTiltShift(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor, loadAction: .load)
 
     drawToScreen(commandBuffer: commandBuffer)
@@ -235,6 +257,35 @@ class RenderView: MTKView {
     
     commandEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: object.vertexCount, instanceCount: object.vertexCount / 3)
     commandEncoder.endEncoding()
+  }
+  
+  func drawModel(commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor) {
+    
+    guard let commandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+      print("Failed to create Metal command encoder")
+      return
+    }
+    
+    let uniformBuffer = getUniformBuffer(worldTransform: matrix_identity_float4x4)
+    
+    commandEncoder.label = "Model Suzanne Rendering"
+    commandEncoder.setRenderPipelineState(renderPipelineStateCurvedShader!)
+    commandEncoder.setVertexBuffer(uniformBuffer, offset:0, index: 1)
+    commandEncoder.setFragmentBuffer(uniformBuffer, offset:0, index: 1)
+    
+    var curve: Float = self.uiDelegate!.parent.curve
+    commandEncoder.setVertexBytes(&curve, length: MemoryLayout<Float>.stride, index: 2)
+    
+    let mesh = meshes[0]
+        let vertexBuffer = mesh.vertexBuffers.first!
+        commandEncoder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
+        let indexBuffer = mesh.submeshes[0].indexBuffer
+        commandEncoder.drawIndexedPrimitives(type: mesh.submeshes[0].primitiveType,
+                                                     indexCount: mesh.submeshes[0].indexCount,
+                                                     indexType: mesh.submeshes[0].indexType,
+                                                     indexBuffer: indexBuffer.buffer,
+                                                     indexBufferOffset: indexBuffer.offset)
+        commandEncoder.endEncoding()
   }
   
   func applyTiltShift(commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor, loadAction: MTLLoadAction) {

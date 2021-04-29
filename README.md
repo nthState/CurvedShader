@@ -5,6 +5,12 @@
 I'm attempting to re-create the same shader effect as Animal Crossing, I've made a simple-as-possible Metal based SwiftUI macOS App
 to try it out.
 
+## Todo
+
+- [ ] Fix TiltShift Shader
+- [ ] Load in *.obj file
+- [ ] Render Cubes in one drawing pass 
+
 ## Screenshots
 
 ![Demo 1l](https://github.com/nthState/CurvedShader/blob/main/Screenshots/demo.gif?raw=true)

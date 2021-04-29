@@ -50,6 +50,6 @@ kernel void tiltShift(texture2d<float, access::read> inTexture [[texture(0)]],
   
   float4 final = pixval / tot;
   
-  outTexture.write(final, gid);
+  outTexture.write(orig, gid);
 }
 
