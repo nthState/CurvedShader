@@ -219,12 +219,12 @@ class RenderView: MTKView {
     }
     
     // Loop through all objects and issue a render command for each
-    //    for (index, object) in objects.enumerated() {
-    //      let loadAction: MTLLoadAction = index == 0 ? .clear : .load
-    //      renderPassDescriptor.colorAttachments[0].loadAction = loadAction
-    //
-    //      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
-    //    }
+        for (index, object) in objects.enumerated() {
+          let loadAction: MTLLoadAction = index == 0 ? .clear : .load
+          renderPassDescriptor.colorAttachments[0].loadAction = loadAction
+    
+          drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
+        }
     
     drawModel(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
     

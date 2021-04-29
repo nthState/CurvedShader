@@ -45,7 +45,7 @@ vertex ColorInOut vertexShader(const device VertexCubeIn* vertex_array [[ buffer
 fragment float4 fragmentShader(ColorInOut in [[stage_in]],
                                constant Uniforms & uniforms [[ buffer(1) ]],
                                texture2d<float> tex) {
-  //return in.texCoord;
-  return float4(0,1,0,1);
+  return in.texCoord;
+  //return float4(0,1,0,1);
 }
 
