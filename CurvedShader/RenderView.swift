@@ -148,7 +148,8 @@ class RenderView: MTKView {
     let pipelineDescriptorModel = MTLRenderPipelineDescriptor()
     pipelineDescriptorModel.vertexFunction = defaultLibrary.makeFunction(name: "vertexShaderModel")
     pipelineDescriptorModel.fragmentFunction = defaultLibrary.makeFunction(name: "fragmentShaderModel")
-    pipelineDescriptorModel.colorAttachments[0].pixelFormat = .bgra8Unorm
+    pipelineDescriptorModel.colorAttachments[0].pixelFormat = self.colorPixelFormat
+    pipelineDescriptorModel.depthAttachmentPixelFormat = self.depthStencilPixelFormat
     pipelineDescriptorModel.vertexDescriptor = self.vertexDescriptor
     
     do {
@@ -168,7 +169,7 @@ class RenderView: MTKView {
     vertexDescriptor.attributes[2] = MDLVertexAttribute(name: MDLVertexAttributeTextureCoordinate, format: .float2, offset: MemoryLayout<Float>.size * 6, bufferIndex: 0)
     vertexDescriptor.layouts[0] = MDLVertexBufferLayout(stride: MemoryLayout<Float>.size * 8)
     self.vertexDescriptor = MTKMetalVertexDescriptorFromModelIO(vertexDescriptor)
-
+    
     let bufferAllocator = MTKMeshBufferAllocator(device: self.device!)
     let asset = MDLAsset(url: modelUrl, vertexDescriptor: vertexDescriptor, bufferAllocator: bufferAllocator)
     (_, meshes) = try! MTKMesh.newMeshes(asset: asset, device: self.device!)
@@ -199,7 +200,7 @@ class RenderView: MTKView {
       buildTextures(size: self.bounds.size)
       texturesBuilt = true
     }
-
+    
     let renderPassDescriptor = MTLRenderPassDescriptor()
     renderPassDescriptor.colorAttachments[0].texture = accumulationTarget
     renderPassDescriptor.colorAttachments[0].loadAction = .clear
@@ -218,17 +219,17 @@ class RenderView: MTKView {
     }
     
     // Loop through all objects and issue a render command for each
-//    for (index, object) in objects.enumerated() {
-//      let loadAction: MTLLoadAction = index == 0 ? .clear : .load
-//      renderPassDescriptor.colorAttachments[0].loadAction = loadAction
-//
-//      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
-//    }
+    //    for (index, object) in objects.enumerated() {
+    //      let loadAction: MTLLoadAction = index == 0 ? .clear : .load
+    //      renderPassDescriptor.colorAttachments[0].loadAction = loadAction
+    //
+    //      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
+    //    }
     
     drawModel(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
     
     applyTiltShift(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor, loadAction: .load)
-
+    
     drawToScreen(commandBuffer: commandBuffer)
   }
   
@@ -285,6 +286,8 @@ class RenderView: MTKView {
     
     commandEncoder.label = "3D Model Rendering"
     commandEncoder.setRenderPipelineState(renderPipelineStateCurvedShaderModel!)
+    //    commandEncoder.setFrontFacing(.counterClockwise)
+    //    commandEncoder.setCullMode(.back)
     commandEncoder.setVertexBuffer(uniformBuffer, offset:0, index: 1)
     commandEncoder.setFragmentBuffer(uniformBuffer, offset:0, index: 1)
     commandEncoder.setFragmentTexture(renderTarget, index: 0)
@@ -293,17 +296,16 @@ class RenderView: MTKView {
     commandEncoder.setVertexBytes(&curve, length: MemoryLayout<Float>.stride, index: 2)
     
     for mesh in meshes {
-        let vertexBuffer = mesh.vertexBuffers.first!
-        commandEncoder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
-     
-        for submesh in mesh.submeshes {
-            let indexBuffer = submesh.indexBuffer
-            commandEncoder.drawIndexedPrimitives(type: submesh.primitiveType,
-                                                 indexCount: submesh.indexCount,
-                                                 indexType: submesh.indexType,
-                                                 indexBuffer: indexBuffer.buffer,
-                                                 indexBufferOffset: indexBuffer.offset)
-        }
+      for (index, vertexBuffer) in mesh.vertexBuffers.enumerated() {
+        commandEncoder.setVertexBuffer(vertexBuffer.buffer, offset: 0, index: index)
+      }
+      for submesh in mesh.submeshes {
+        commandEncoder.drawIndexedPrimitives(type: submesh.primitiveType,
+                                             indexCount: submesh.indexCount,
+                                             indexType: submesh.indexType,
+                                             indexBuffer: submesh.indexBuffer.buffer,
+                                             indexBufferOffset: submesh.indexBuffer.offset)
+      }
     }
     
     commandEncoder.endEncoding()

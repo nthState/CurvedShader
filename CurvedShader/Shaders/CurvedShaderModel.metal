@@ -10,9 +10,12 @@ using namespace metal;
 #import "ShaderTypes.h"
 
 struct VertexIn {
-    float3 position  [[attribute(0)]];
-    float3 normal    [[attribute(1)]];
-    float2 texCoords [[attribute(2)]];
+//    float3 position  [[attribute(0)]];
+//    float3 normal    [[attribute(1)]];
+//    float2 texCoords [[attribute(2)]];
+  packed_float3 position ;
+  packed_float3 normal;
+  packed_float2 texCoords;
 };
  
 struct VertexOut {
@@ -27,11 +30,11 @@ vertex VertexOut vertexShaderModel(const device VertexIn* vertex_array [[ buffer
                                constant float & curvature [[ buffer(2) ]],
                                unsigned int vid [[ vertex_id ]]) {
   
-  VertexIn VertexIn = vertex_array[vid];
+  VertexIn vert = vertex_array[vid];
   
 
   
-  float4 pos = float4(VertexIn.position, 1);
+  float4 pos = float4(vert.position, 1);
 //  float4 vv = uniforms.modelViewTransform * pos;
 //  vv.xyz += uniforms.camera.columns[3].xyz;
 //  vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
@@ -41,7 +44,9 @@ vertex VertexOut vertexShaderModel(const device VertexIn* vertex_array [[ buffer
   
   VertexOut out;
   out.position = finalPos;
-  out.texCoords = VertexIn.texCoords;
+  out.texCoords = vert.texCoords;
+//  out.eyeNormal = float4(1);
+//  out.eyePosition = float4(1);
   return out;
 }
 

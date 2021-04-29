@@ -24,11 +24,11 @@ vertex ColorInOut vertexShader(const device VertexCubeIn* vertex_array [[ buffer
                                constant float & curvature [[ buffer(2) ]],
                                unsigned int vid [[ vertex_id ]]) {
   
-  VertexCubeIn VertexIn = vertex_array[vid];
+  VertexCubeIn vert = vertex_array[vid];
   
 
   
-  float4 pos = float4(VertexIn.position, 1);
+  float4 pos = float4(vert.position, 1);
   float4 vv = uniforms.modelViewTransform * pos;
   vv.xyz += uniforms.camera.columns[3].xyz;
   vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
@@ -38,7 +38,7 @@ vertex ColorInOut vertexShader(const device VertexCubeIn* vertex_array [[ buffer
   
   ColorInOut out;
   out.position = finalPos;
-  out.texCoord = VertexIn.texCoord;
+  out.texCoord = vert.texCoord;
   return out;
 }
 
