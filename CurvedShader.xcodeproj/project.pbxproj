@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		671347DA263601290009B532 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671347D9263601290009B532 /* Logging.swift */; };
 		6731F589263ACE5F00516AED /* suzanne.obj in Resources */ = {isa = PBXBuildFile; fileRef = 6731F588263ACE5F00516AED /* suzanne.obj */; };
+		6731F58C263AD3A100516AED /* CurvedShaderModel.metal in Sources */ = {isa = PBXBuildFile; fileRef = 6731F58B263AD3A100516AED /* CurvedShaderModel.metal */; };
+		6731F58E263AD4DB00516AED /* teapot.obj in Resources */ = {isa = PBXBuildFile; fileRef = 6731F58D263AD4DB00516AED /* teapot.obj */; };
 		67BE1AAD263462AC00C5B377 /* CurvedShaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */; };
 		67BE1AAF263462AC00C5B377 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BE1AAE263462AC00C5B377 /* ContentView.swift */; };
 		67BE1AB1263462AD00C5B377 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67BE1AB0263462AD00C5B377 /* Assets.xcassets */; };
@@ -27,6 +29,8 @@
 /* Begin PBXFileReference section */
 		671347D9263601290009B532 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		6731F588263ACE5F00516AED /* suzanne.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = suzanne.obj; sourceTree = "<group>"; };
+		6731F58B263AD3A100516AED /* CurvedShaderModel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CurvedShaderModel.metal; sourceTree = "<group>"; };
+		6731F58D263AD4DB00516AED /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		67BD6CDC263752AE00BC62B7 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		67BE1AA9263462AC00C5B377 /* CurvedShader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CurvedShader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurvedShaderApp.swift; sourceTree = "<group>"; };
@@ -58,6 +62,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6731F58A263AD12B00516AED /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				67BE1ACA2634645200C5B377 /* ShaderTypes.h */,
+				67DF5B9F2639748700016057 /* Screen.metal */,
+				67DF5B9D2639691200016057 /* TiltShift.metal */,
+				67BE1AC32634641F00C5B377 /* CurvedShader.metal */,
+				6731F58B263AD3A100516AED /* CurvedShaderModel.metal */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
 		67BE1AA0263462AC00C5B377 = {
 			isa = PBXGroup;
 			children = (
@@ -85,7 +101,7 @@
 				67BE1AAE263462AC00C5B377 /* ContentView.swift */,
 				67BE1AD22634690500C5B377 /* Cube.swift */,
 				67BE1AB6263462AD00C5B377 /* CurvedShader.entitlements */,
-				67BE1AC32634641F00C5B377 /* CurvedShader.metal */,
+				6731F58A263AD12B00516AED /* Shaders */,
 				67BE1AAC263462AC00C5B377 /* CurvedShaderApp.swift */,
 				67BE1ADD2634A6EA00C5B377 /* float4x4+Extensions.swift */,
 				67BE1AB5263462AD00C5B377 /* Info.plist */,
@@ -93,10 +109,8 @@
 				67BE1ABD263462D300C5B377 /* MetalViewRepresentable.swift */,
 				67BE1AB2263462AD00C5B377 /* Preview Content */,
 				67BE1AC02634632300C5B377 /* RenderView.swift */,
-				67DF5B9F2639748700016057 /* Screen.metal */,
-				67BE1ACA2634645200C5B377 /* ShaderTypes.h */,
 				6731F588263ACE5F00516AED /* suzanne.obj */,
-				67DF5B9D2639691200016057 /* TiltShift.metal */,
+				6731F58D263AD4DB00516AED /* teapot.obj */,
 				67BE1ACF263468E300C5B377 /* Vertex.swift */,
 			);
 			path = CurvedShader;
@@ -171,6 +185,7 @@
 				67BE1ADB2634A29300C5B377 /* README.md in Resources */,
 				67BE1AB4263462AD00C5B377 /* Preview Assets.xcassets in Resources */,
 				67BE1AB1263462AD00C5B377 /* Assets.xcassets in Resources */,
+				6731F58E263AD4DB00516AED /* teapot.obj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,6 +201,7 @@
 				67BE1AC12634632300C5B377 /* RenderView.swift in Sources */,
 				67DF5B9E2639691200016057 /* TiltShift.metal in Sources */,
 				67BE1AC42634641F00C5B377 /* CurvedShader.metal in Sources */,
+				6731F58C263AD3A100516AED /* CurvedShaderModel.metal in Sources */,
 				67BE1AAD263462AC00C5B377 /* CurvedShaderApp.swift in Sources */,
 				67BE1ADE2634A6EA00C5B377 /* float4x4+Extensions.swift in Sources */,
 				67BE1AD32634690500C5B377 /* Cube.swift in Sources */,

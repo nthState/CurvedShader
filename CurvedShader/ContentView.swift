@@ -48,7 +48,7 @@ struct ContentView: View {
             
             HStack {
               Text("Z Camera Height")
-              Slider(value: $zCameraHeight, in: -20...20)
+              Slider(value: $zCameraHeight, in: -100...100)
               TextField("", value: $zCameraHeight, formatter: NumberFormatter())
                 .frame(width: 100)
             }

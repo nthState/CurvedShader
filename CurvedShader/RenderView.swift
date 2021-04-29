@@ -14,6 +14,7 @@ class RenderView: MTKView {
   
   private var renderPipelineStateScreen: MTLRenderPipelineState!
   private var renderPipelineStateCurvedShader: MTLRenderPipelineState!
+  private var renderPipelineStateCurvedShaderModel: MTLRenderPipelineState!
   private var renderPipelineStateTiltShift: MTLComputePipelineState!
   
   // Model
@@ -142,11 +143,22 @@ class RenderView: MTKView {
       fatalError("Unable to create preview Metal view pipeline state renderPipelineStateCurvedShader. (\(error))")
     }
     
+    let pipelineDescriptorModel = MTLRenderPipelineDescriptor()
+    pipelineDescriptorModel.vertexFunction = defaultLibrary.makeFunction(name: "vertexShaderModel")
+    pipelineDescriptorModel.fragmentFunction = defaultLibrary.makeFunction(name: "fragmentShaderModel")
+    pipelineDescriptorModel.colorAttachments[0].pixelFormat = .bgra8Unorm
+    
+    do {
+      renderPipelineStateCurvedShaderModel = try device!.makeRenderPipelineState(descriptor: pipelineDescriptorModel)
+    } catch {
+      fatalError("Unable to create preview Metal view pipeline state renderPipelineStateCurvedShaderModel. (\(error))")
+    }
+    
     commandQueue = device!.makeCommandQueue()
   }
   
   func loadModel() {
-    let modelUrl = Bundle.main.url(forResource: "suzanne", withExtension: "obj")
+    let modelUrl = Bundle.main.url(forResource: "teapot", withExtension: "obj")
     let vertexDescriptor = MDLVertexDescriptor()
     vertexDescriptor.attributes[0] = MDLVertexAttribute(name: MDLVertexAttributePosition, format: .float3, offset: 0, bufferIndex: 0)
     vertexDescriptor.attributes[1] = MDLVertexAttribute(name: MDLVertexAttributeNormal, format: .float3, offset: MemoryLayout<Float>.size * 3, bufferIndex: 0)
@@ -203,12 +215,12 @@ class RenderView: MTKView {
     }
     
     // Loop through all objects and issue a render command for each
-    for (index, object) in objects.enumerated() {
-      let loadAction: MTLLoadAction = index == 0 ? .clear : .load
-      renderPassDescriptor.colorAttachments[0].loadAction = loadAction
-      
-      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
-    }
+//    for (index, object) in objects.enumerated() {
+//      let loadAction: MTLLoadAction = index == 0 ? .clear : .load
+//      renderPassDescriptor.colorAttachments[0].loadAction = loadAction
+//
+//      drawObject(object: object, commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
+//    }
     
     drawModel(commandBuffer: commandBuffer, renderPassDescriptor: renderPassDescriptor)
     
@@ -268,24 +280,30 @@ class RenderView: MTKView {
     
     let uniformBuffer = getUniformBuffer(worldTransform: matrix_identity_float4x4)
     
-    commandEncoder.label = "Model Suzanne Rendering"
-    commandEncoder.setRenderPipelineState(renderPipelineStateCurvedShader!)
+    commandEncoder.label = "3D Model Rendering"
+    commandEncoder.setRenderPipelineState(renderPipelineStateCurvedShaderModel!)
+    
+    let mesh = meshes[0]
+    let vertexBuffer = mesh.vertexBuffers.first!
+    commandEncoder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
+    let indexBuffer = mesh.submeshes[0].indexBuffer
+    
+    
     commandEncoder.setVertexBuffer(uniformBuffer, offset:0, index: 1)
     commandEncoder.setFragmentBuffer(uniformBuffer, offset:0, index: 1)
+    
+    commandEncoder.setFragmentTexture(renderTarget, index: 0)
     
     var curve: Float = self.uiDelegate!.parent.curve
     commandEncoder.setVertexBytes(&curve, length: MemoryLayout<Float>.stride, index: 2)
     
-    let mesh = meshes[0]
-        let vertexBuffer = mesh.vertexBuffers.first!
-        commandEncoder.setVertexBuffer(vertexBuffer.buffer, offset: vertexBuffer.offset, index: 0)
-        let indexBuffer = mesh.submeshes[0].indexBuffer
-        commandEncoder.drawIndexedPrimitives(type: mesh.submeshes[0].primitiveType,
-                                                     indexCount: mesh.submeshes[0].indexCount,
-                                                     indexType: mesh.submeshes[0].indexType,
-                                                     indexBuffer: indexBuffer.buffer,
-                                                     indexBufferOffset: indexBuffer.offset)
-        commandEncoder.endEncoding()
+    commandEncoder.drawIndexedPrimitives(type: mesh.submeshes[0].primitiveType,
+                                         indexCount: mesh.submeshes[0].indexCount,
+                                         indexType: mesh.submeshes[0].indexType,
+                                         indexBuffer: indexBuffer.buffer,
+                                         indexBufferOffset: indexBuffer.offset)
+    
+    commandEncoder.endEncoding()
   }
   
   func applyTiltShift(commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor, loadAction: MTLLoadAction) {
