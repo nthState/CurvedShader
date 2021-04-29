@@ -35,10 +35,10 @@ vertex VertexOut vertexShaderModel(const device VertexIn* vertex_array [[ buffer
 
   
   float4 pos = float4(vert.position, 1);
-//  float4 vv = uniforms.modelViewTransform * pos;
-//  vv.xyz += uniforms.camera.columns[3].xyz;
-//  vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
-//  pos -= uniforms.worldInverse * vv;
+  float4 vv = uniforms.modelViewTransform * pos;
+  vv.xyz += uniforms.camera.columns[3].xyz;
+  vv = float4( 0.0f, (vv.z * vv.z) * - curvature, 0.0f, 0.0f );
+  pos -= uniforms.worldInverse * vv;
 
   float4 finalPos = uniforms.modelViewProjectionTransform * pos;
   
