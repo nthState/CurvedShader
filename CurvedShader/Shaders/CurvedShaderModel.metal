@@ -49,7 +49,7 @@ fragment float4 fragmentShaderModel(VertexOut in [[stage_in]],
                                constant Uniforms & uniforms [[ buffer(1) ]],
                                texture2d<float> tex) {
   //return in.texCoord;
-  return float4(0,1,0,1);
+  return float4(0,0,1,1);
 }
 
 
